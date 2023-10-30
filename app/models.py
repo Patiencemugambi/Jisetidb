@@ -29,8 +29,8 @@ class Intervention(Base):
     description = Column(Text)
     attachments = Column(String)
     additional_details = Column(Text)
-    location_lat = Column(Float)
-    location_long = Column(Float)
+    county = Column(String)
+    location = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
     status_id = Column(Integer, ForeignKey("statuses.id"))
 
