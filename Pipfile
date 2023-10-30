@@ -8,6 +8,7 @@ uvicorn = "*"
 fastapi = "*"
 sqlalchemy = "*"
 
+
 [dev-packages]
 
 [requires]
