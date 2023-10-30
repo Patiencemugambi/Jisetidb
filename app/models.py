@@ -40,3 +40,31 @@ class Intervention(Base):
     images = relationship("Image", back_populates="intervention")
     videos = relationship("Video", back_populates="intervention")
 
+class Status(Base):
+    __tablename__ = "statuses"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    record_type = Column(String)
+
+    red_flags = relationship("RedFlag", back_populates="status")
+    interventions = relationship("Intervention", back_populates="status")
+
+class RedFlag(Base):
+    __tablename__ = "red_flags"
+
+    id = Column(Integer, primary_key=True)
+    incident_type = Column(String)
+    description = Column(Text)
+    attachments = Column(String)
+    additional_details = Column(Text)
+    county = Column(String)
+    location = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    status_id = Column(Integer, ForeignKey("statuses.id"))
+
+    user = relationship("User", back_populates="red_flags")
+    status = relationship("Status", back_populates="red_flags")
+    interventions = relationship("Intervention", secondary="tags")
+    images = relationship("Image", back_populates="red_flag")
+    videos = relationship("Video", back_populates="red_flag")
