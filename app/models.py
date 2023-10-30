@@ -39,6 +39,15 @@ class Intervention(Base):
     red_flags = relationship("RedFlag", secondary="tags")
     images = relationship("Image", back_populates="intervention")
     videos = relationship("Video", back_populates="intervention")
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id = Column(Integer, primary_key=True)
+    red_flag_id = Column(Integer, ForeignKey("red_flags.id"))
+    intervention_id = Column(Integer, ForeignKey("interventions.id"))
+
+    red_flag = relationship("RedFlag", backref="tags")
+    intervention = relationship("Intervention", backref="tags")
 
 class Status(Base):
     __tablename__ = "statuses"
@@ -68,3 +77,51 @@ class RedFlag(Base):
     interventions = relationship("Intervention", secondary="tags")
     images = relationship("Image", back_populates="red_flag")
     videos = relationship("Video", back_populates="red_flag")
+    
+    red_flag = relationship("RedFlag", backref="tags")
+    intervention = relationship("Intervention", backref="tags")
+
+class Image(Base):
+    __tablename__ = "images"
+
+    id = Column(Integer, primary_key=True)
+    red_flag_id = Column(Integer, ForeignKey("red_flags.id"))
+    intervention_id = Column(Integer, ForeignKey("interventions.id"))
+    file_path = Column(String)
+
+    red_flag = relationship("RedFlag", back_populates="images")
+    intervention = relationship("Intervention", back_populates="images")
+
+class Video(Base):
+    __tablename__ = "videos"
+
+    id = Column(Integer, primary_key=True)
+    red_flag_id = Column(Integer, ForeignKey("red_flags.id"))
+    intervention_id = Column(Integer, ForeignKey("interventions.id"))
+    file_path = Column(String)
+
+    red_flag = relationship("RedFlag", back_populates="videos")
+    intervention = relationship("Intervention", back_populates="videos")
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    message = Column(Text)
+    is_email = Column(Boolean)
+    is_sms = Column(Boolean)
+
+    user = relationship("User", back_populates="notifications")
+
+class AdminAction(Base):
+    __tablename__ = "admin_actions"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    record_id = Column(Integer)
+    action = Column(String)
+    timestamp = Column(String)
+
+    user = relationship("User", back_populates="admin_actions")
+ 
