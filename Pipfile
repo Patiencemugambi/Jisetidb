@@ -7,7 +7,7 @@ name = "pypi"
 uvicorn = "*"
 fastapi = "*"
 sqlalchemy = "*"
-
+pydantic = "*"
 
 [dev-packages]
 
