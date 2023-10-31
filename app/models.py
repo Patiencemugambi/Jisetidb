@@ -1,4 +1,3 @@
-
 from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -6,48 +5,18 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 class User(Base):
-    __tablename__ = 'user'
-    id = Column(Integer, primary_key=True, index=True)
-    user_name = Column(String, unique=True, index=True)
-    full_name = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    role = Column(String, nullable=False)
-
-    red_flags = relationship('Red_flag', back_populates='user')
-    interventions = relationship('Intervention', back_populates='user')
-    notifications = relationship('Notification', back_populates='user')
-    admin_actions = relationship('AdminAction', back_populates='user')
-
-
-
-class Intervention(Base):
-    __tablename__ = "interventions"
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    title = Column(String)
-    description = Column(Text)
-    attachments = Column(String)
-    additional_details = Column(Text)
-    location_lat = Column(Float)
-    location_long = Column(Float)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    status_id = Column(Integer, ForeignKey("statuses.id"))
+    username = Column(String)
+    email = Column(String)
+    password = Column(String)
+    role = Column(String)
 
-    user = relationship("User", back_populates="interventions")
-    status = relationship("Status", back_populates="interventions")
-    red_flags = relationship("RedFlag", secondary="tags")
-    images = relationship("Image", back_populates="intervention")
-    videos = relationship("Video", back_populates="intervention")
-class Tag(Base):
-    __tablename__ = "tags"
-
-    id = Column(Integer, primary_key=True)
-    red_flag_id = Column(Integer, ForeignKey("red_flags.id"))
-    intervention_id = Column(Integer, ForeignKey("interventions.id"))
-
-    red_flag = relationship("RedFlag", backref="tags")
-    intervention = relationship("Intervention", backref="tags")
+    red_flags = relationship("RedFlag", back_populates="user")
+    interventions = relationship("Intervention", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")
+    admin_actions = relationship("AdminAction", back_populates="user")
 
 class Status(Base):
     __tablename__ = "statuses"
@@ -62,12 +31,12 @@ class Status(Base):
 class RedFlag(Base):
     __tablename__ = "red_flags"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True ,index=True)
     incident_type = Column(String)
     description = Column(Text)
     attachments = Column(String)
     additional_details = Column(Text)
-    county = Column(String)
+    county = Column(String, nullable=True)
     location = Column(String)
     user_id = Column(Integer, ForeignKey("users.id"))
     status_id = Column(Integer, ForeignKey("statuses.id"))
@@ -77,7 +46,33 @@ class RedFlag(Base):
     interventions = relationship("Intervention", secondary="tags")
     images = relationship("Image", back_populates="red_flag")
     videos = relationship("Video", back_populates="red_flag")
-    
+
+class Intervention(Base):
+    __tablename__ = "interventions"
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    description = Column(Text)
+    attachments = Column(String)
+    additional_details = Column(Text)
+    county = Column(String)
+    location = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    status_id = Column(Integer, ForeignKey("statuses.id"))
+
+    user = relationship("User", back_populates="interventions")
+    status = relationship("Status", back_populates="interventions")
+    red_flags = relationship("RedFlag", secondary="tags")
+    images = relationship("Image", back_populates="intervention")
+    videos = relationship("Video", back_populates="intervention")
+
+class Tag(Base):
+    __tablename__ = "tags"
+
+    id = Column(Integer, primary_key=True)
+    red_flag_id = Column(Integer, ForeignKey("red_flags.id"))
+    intervention_id = Column(Integer, ForeignKey("interventions.id"))
+
     red_flag = relationship("RedFlag", backref="tags")
     intervention = relationship("Intervention", backref="tags")
 
@@ -124,4 +119,3 @@ class AdminAction(Base):
     timestamp = Column(String)
 
     user = relationship("User", back_populates="admin_actions")
- 
