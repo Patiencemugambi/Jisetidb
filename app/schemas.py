@@ -113,3 +113,20 @@ class AdminAction(AdminActionBase):
 
     class Config:
         orm_mode = True
+
+        
+class Status(BaseModel):
+    id: int
+    name: str       
+
+class StatusCreate(BaseModel):
+    name: str
+
+    @validator("name")
+    def name_is_string(cls, v):
+        if not isinstance(v, str):
+            raise ValueError("Status name must be a string")
+        return v
+
+    class Config:
+        orm_mode = True
