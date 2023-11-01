@@ -143,7 +143,11 @@ def update_intervention(intervention_id: int, intervention: schemas.Intervention
     db.commit()
     db.refresh(db_intervention)
     return db_intervention
-
 @app.delete("/interventions/{intervention_id}")
 def delete_intervention(intervention_id: int, db: Session = Depends(get_db)):
-    db_intervention = db.query(models.Intervention).filter
+    db_intervention = db.query(models.Intervention).filter(models.Intervention.id == intervention_id).first()
+    if db_intervention is None:
+        raise HTTPException(status_code=404, detail="Intervention not found")
+    db.delete(db_intervention)
+    db.commit()
+    return {"message": "Intervention deleted"}
