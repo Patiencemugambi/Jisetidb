@@ -29,3 +29,13 @@ toml
 typing_extensions
 uvicorn
 passlib
+fastapi
+sqlalchemy
+passlib
+python-jose[cryptography]
+pydantic
+uvicorn
+python-multipart
+async-exit-stack
+async-generator
+
