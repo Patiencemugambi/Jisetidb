@@ -60,8 +60,6 @@ class Intervention(InterventionBase):
     class Config:
         orm_mode = True
 
-# ... rest of your models ...
-
 class ImageBase(BaseModel):
     file_path: str
 
@@ -116,7 +114,6 @@ class AdminAction(AdminActionBase):
     class Config:
         orm_mode = True
 
-
 class Status(BaseModel):
     id: int
     name: str       
@@ -131,8 +128,7 @@ class StatusCreate(BaseModel):
         return v
 
     class Config:
-        orm_mode = True     
-
+        orm_mode = True
 
 class UserInDB(BaseModel):
     username: str
@@ -151,8 +147,6 @@ class UserInDB(BaseModel):
     role: str
     hashed_password: str
 
-
 class Geolocation(BaseModel):
     county: str
     location: str
-
