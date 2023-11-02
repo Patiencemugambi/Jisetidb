@@ -322,6 +322,10 @@ def delete_intervention(intervention_id: int, db: Session = Depends(get_db), cur
 
     return {"message": "Intervention deleted", "deleted_at": db_intervention.deleted_at, "deleted_by": db_intervention.deleted_by}
 
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  
-    run("main:app", host="0.0.0.0", port=port, reload=True)
+    host = "0.0.0.0"
+    
+    port = int(os.environ.get("PORT", 8000))
+    
+    run("main:app", host=host, port=port, reload=True)
