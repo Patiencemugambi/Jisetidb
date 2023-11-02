@@ -28,3 +28,4 @@ starlette
 toml
 typing_extensions
 uvicorn
+passlib
