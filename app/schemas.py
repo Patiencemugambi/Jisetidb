@@ -25,7 +25,7 @@ class User(UserBase):
 class RedFlagBase(BaseModel):
     incident_type: str
     description: str
-    attachments: Optional[str] = None
+    attachments: Optional[str] = None  
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
@@ -44,7 +44,7 @@ class RedFlag(RedFlagBase):
 class InterventionBase(BaseModel):
     title: str
     description: str
-    attachments: Optional[str] = None
+    attachments: Optional[str] = None 
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
@@ -59,6 +59,8 @@ class Intervention(InterventionBase):
 
     class Config:
         orm_mode = True
+
+# ... rest of your models ...
 
 class ImageBase(BaseModel):
     file_path: str
@@ -114,7 +116,7 @@ class AdminAction(AdminActionBase):
     class Config:
         orm_mode = True
 
-        
+
 class Status(BaseModel):
     id: int
     name: str       
@@ -129,4 +131,28 @@ class StatusCreate(BaseModel):
         return v
 
     class Config:
-        orm_mode = True
+        orm_mode = True     
+
+
+class UserInDB(BaseModel):
+    username: str
+    hashed_password: str  
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str     
+
+class TokenData(BaseModel):
+    username: str
+
+class UserInDB(BaseModel):
+    username: str
+    email: str
+    role: str
+    hashed_password: str
+
+
+class Geolocation(BaseModel):
+    county: str
+    location: str
+
