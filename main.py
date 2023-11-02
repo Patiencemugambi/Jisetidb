@@ -9,6 +9,8 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel, ValidationError
 from app.database import SessionLocal
 from app.schemas import Status, Geolocation
+import os
+from uvicorn import run
 
 SECRET_KEY = "bbd52edcc37bf1e12607be5859baabfdb22e3aee556d5798d7174a941aa4bd8f"
 ALGORITHM = "HS256"
@@ -319,3 +321,7 @@ def delete_intervention(intervention_id: int, db: Session = Depends(get_db), cur
     db.commit()
 
     return {"message": "Intervention deleted", "deleted_at": db_intervention.deleted_at, "deleted_by": db_intervention.deleted_by}
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  
+    run("main:app", host="0.0.0.0", port=port, reload=True)
