@@ -47,6 +47,11 @@ async def options_handler(request: Request, call_next):
     return response
 models.Base.metadata.create_all(bind=database.engine)
 
+@app.middleware("http")
+async def add_cors_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 def get_db():
     db = SessionLocal()
