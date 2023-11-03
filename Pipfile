@@ -10,6 +10,7 @@ sqlalchemy = "*"
 pydantic = "*"
 alembic = "*"
 jose = "*"
+pydantic-core = "==2.10.1"
 
 [dev-packages]
 
