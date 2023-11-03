@@ -3,6 +3,7 @@ annotated-types
 anyio
 async-exit-stack
 async-generator
+bcrypt
 cffi
 click
 cryptography
@@ -28,6 +29,7 @@ rsa
 six
 sniffio
 SQLAlchemy
+starlette
 toml
 typing_extensions
 uvicorn
