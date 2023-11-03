@@ -11,6 +11,10 @@ from app.database import SessionLocal
 from app.schemas import Status, Geolocation
 import os
 from uvicorn import run
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 
 SECRET_KEY = "bbd52edcc37bf1e12607be5859baabfdb22e3aee556d5798d7174a941aa4bd8f"
 ALGORITHM = "HS256"
@@ -24,6 +28,23 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
 
+# Configure CORS to allow all origins for all routes (you can customize this)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Custom middleware to handle "OPTIONS" requests for all routes
+@app.middleware("http")
+async def options_handler(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={"message": "OK"})
+    else:
+        response = await call_next(request)
+    return response
 models.Base.metadata.create_all(bind=database.engine)
 
 
@@ -38,7 +59,6 @@ def get_db():
 def get_user(username: str, db: Session):
     return db.query(models.User).filter(models.User.username == username).first()
 
-
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
@@ -48,7 +68,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
-
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -70,7 +89,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
-
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # Check if the user specified "admin" as the role
@@ -86,6 +104,24 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
+@app.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = get_user(form_data.username, db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    if not pwd_context.verify(form_data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
 
 
 @app.post("/token", response_model=schemas.Token)
@@ -106,6 +142,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
+
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)
@@ -201,6 +238,20 @@ def update_red_flag_location(
     db.commit()
     db.refresh(db_red_flag)
     return db_red_flag
+
+@app.delete("/red_flags/{red_flag_id}")
+def delete_red_flag(red_flag_id: int, db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_user)):
+    db_red_flag = db.query(models.RedFlag).filter(models.RedFlag.id == red_flag_id).first()
+    if db_red_flag is None:
+        raise HTTPException(status_code=404, detail="Red flag not found")
+
+    if db_red_flag.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Permission denied")
+
+    db.delete(db_red_flag)
+    db.commit()
+
+    return {"message": "Red flag deleted"}
 
 
 @app.post("/statuses/{red_flag_id}/change_status", response_model=schemas.RedFlag)
@@ -322,7 +373,8 @@ def delete_intervention(intervention_id: int, db: Session = Depends(get_db), cur
 
     return {"message": "Intervention deleted", "deleted_at": db_intervention.deleted_at, "deleted_by": db_intervention.deleted_by}
 
+
 if __name__ == "__main__":
     host = "0.0.0.0"
-    port = int(os.environ.get("PORT", 10000))
-    run("main:app", host=host, port=port, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    run("main:app", host=host, port=port)
