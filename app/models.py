@@ -1,7 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-
 Base = declarative_base()
 
 class User(Base):
@@ -51,6 +50,7 @@ class RedFlag(Base):
     additional_details = Column(Text)
     county = Column(String, nullable=True)
     location = Column(String)
+    date = Column(DateTime, nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     status_id = Column(Integer, ForeignKey("statuses.id"))
 
