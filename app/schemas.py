@@ -18,6 +18,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     role: str
+    username : str
     password : str
 
     class Config:
