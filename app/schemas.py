@@ -1,6 +1,5 @@
 from typing import List, Optional
 from pydantic import BaseModel, validator
-from models import Login
 
 class UserBase(BaseModel):
     username: str
@@ -19,7 +18,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     role: str
-    login: Login
+    login: "Login"
 
     class Config:
         orm_mode = True
