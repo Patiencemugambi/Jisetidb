@@ -29,29 +29,29 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 app = FastAPI()
 
 # Configure CORS to allow all origins for all routes (you can customize this)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
-# Custom middleware to handle "OPTIONS" requests for all routes
-@app.middleware("http")
-async def options_handler(request: Request, call_next):
-    if request.method == "OPTIONS":
-        response = JSONResponse(content={"message": "OK"})
-    else:
-        response = await call_next(request)
-    return response
-models.Base.metadata.create_all(bind=database.engine)
+# # Custom middleware to handle "OPTIONS" requests for all routes
+# @app.middleware("http")
+# async def options_handler(request: Request, call_next):
+#     if request.method == "OPTIONS":
+#         response = JSONResponse(content={"message": "OK"})
+#     else:
+#         response = await call_next(request)
+#     return response
+# models.Base.metadata.create_all(bind=database.engine)
 
-@app.middleware("http")
-async def add_cors_header(request: Request, call_next):
-    response = await call_next(request)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    return response
+# @app.middleware("http")
+# async def add_cors_header(request: Request, call_next):
+#     response = await call_next(request)
+#     response.headers['Access-Control-Allow-Origin'] = '*'
+#     return response
 
 def get_db():
     db = SessionLocal()
