@@ -164,3 +164,14 @@ class UserInDB(BaseModel):
 class Geolocation(BaseModel):
     county: str
     location: str
+
+
+class LoginCreate(BaseModel):
+    username: str
+    password: str
+
+class Login(LoginCreate):
+    id: int
+
+    class Config:
+        orm_mode = True
