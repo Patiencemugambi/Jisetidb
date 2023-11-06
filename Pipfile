@@ -10,6 +10,9 @@ sqlalchemy = "*"
 pydantic = "*"
 alembic = "*"
 jose = "*"
+pydantic-core = "*"
+starlette = "*"
+bcrypt = "*"
 
 [dev-packages]
 
