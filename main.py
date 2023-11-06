@@ -37,21 +37,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Custom middleware to handle "OPTIONS" requests for all routes
-@app.middleware("http")
-async def options_handler(request: Request, call_next):
-    if request.method == "OPTIONS":
-        response = JSONResponse(content={"message": "OK"})
-    else:
-        response = await call_next(request)
-    return response
+# @app.middleware("http")
+# async def options_handler(request: Request, call_next):
+#     if request.method == "OPTIONS":
+#         response = JSONResponse(content={"message": "OK"})
+#     else:
+#         response = await call_next(request)
+#     return response
 models.Base.metadata.create_all(bind=database.engine)
 
-@app.middleware("http")
-async def add_cors_header(request: Request, call_next):
-    response = await call_next(request)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    return response
+# @app.middleware("http")
+# async def add_cors_header(request: Request, call_next):
+#     response = await call_next(request)
+#     response.headers['Access-Control-Allow-Origin'] = '*'
+#     return response
 
 def get_db():
     db = SessionLocal()
