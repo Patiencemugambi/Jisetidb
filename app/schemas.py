@@ -27,7 +27,7 @@ class User(UserBase):
 class LoginBase(BaseModel):
     username: str
     user_id: int
-    class cofiig:
+    class cofig:
         arbitrary_types_allowed = True
 
 class LoginCreate(LoginBase):
