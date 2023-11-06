@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table,DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
-
+from sqlalchemy.sql import func
 Base = declarative_base()
 
 class User(Base):
@@ -23,7 +23,6 @@ class Status(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    record_type = Column(String)
 
     red_flags = relationship("RedFlag", back_populates="status")
     interventions = relationship("Intervention", back_populates="status")
@@ -38,6 +37,7 @@ class RedFlag(Base):
     additional_details = Column(Text)
     county = Column(String, nullable=True)
     location = Column(String)
+    date = Column(DateTime, default=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
     status_id = Column(Integer, ForeignKey("statuses.id"))
 
@@ -57,6 +57,7 @@ class Intervention(Base):
     additional_details = Column(Text)
     county = Column(String)
     location = Column(String)
+    date = Column(DateTime, default=func.now())
     user_id = Column(Integer, ForeignKey("users.id"))
     status_id = Column(Integer, ForeignKey("statuses.id"))
 
