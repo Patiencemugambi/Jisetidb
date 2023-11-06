@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app import models, schemas, database
-from typing import List, Optional, Union
+from typing import List, Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -14,9 +14,7 @@ from uvicorn import run
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.database import UserLoginErrorResponse
-from app.database import UserLoginResponse
-from app.database import UserLogin
+
 
 SECRET_KEY = "bbd52edcc37bf1e12607be5859baabfdb22e3aee556d5798d7174a941aa4bd8f"
 ALGORITHM = "HS256"
@@ -39,20 +37,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# @app.middleware("http")
-# async def options_handler(request: Request, call_next):
-#     if request.method == "OPTIONS":
-#         response = JSONResponse(content={"message": "OK"})
-#     else:
-#         response = await call_next(request)
-#     return response
+# Custom middleware to handle "OPTIONS" requests for all routes
+@app.middleware("http")
+async def options_handler(request: Request, call_next):
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={"message": "OK"})
+    else:
+        response = await call_next(request)
+    return response
 models.Base.metadata.create_all(bind=database.engine)
 
-# @app.middleware("http")
-# async def add_cors_header(request: Request, call_next):
-#     response = await call_next(request)
-#     response.headers['Access-Control-Allow-Origin'] = '*'
-#     return response
+@app.middleware("http")
+async def add_cors_header(request: Request, call_next):
+    response = await call_next(request)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 def get_db():
     db = SessionLocal()
@@ -110,8 +109,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
-@app.post("/login", response_model=Union[UserLoginResponse, UserLoginErrorResponse])
-def login(form_data: UserLogin, db: Session = Depends(get_db)):
+@app.post("/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = get_user(form_data.username, db)
     if not user:
         raise HTTPException(
@@ -127,7 +126,7 @@ def login(form_data: UserLogin, db: Session = Depends(get_db)):
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
 
 
 @app.post("/token", response_model=schemas.Token)
