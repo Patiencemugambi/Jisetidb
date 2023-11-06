@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+
 Base = declarative_base()
 
 class User(Base):
@@ -12,23 +13,10 @@ class User(Base):
     password = Column(String)
     role = Column(String)
 
-
-    # login = relationship("Login", uselist=False, back_populates="user")
     red_flags = relationship("RedFlag", back_populates="user")
     interventions = relationship("Intervention", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
     admin_actions = relationship("AdminAction", back_populates="user")
-
-# class Login(Base):
-#     __tablename__ = "logins"
-
-#     id = Column(Integer, primary_key=True, index=True)
-#     username = Column(String, unique=True, index=True)
-#     email = Column(String, unique=True, index=True)
-#     user_id = Column(Integer, ForeignKey("users.id"))
-
-#     user = relationship("User", back_populates="login")
-
 
 class Status(Base):
     __tablename__ = "statuses"
@@ -43,7 +31,7 @@ class Status(Base):
 class RedFlag(Base):
     __tablename__ = "red_flags"
 
-    id = Column(Integer, primary_key=True ,index=True)
+    id = Column(Integer, primary_key=True, index=True)
     incident_type = Column(String)
     description = Column(Text)
     attachments = Column(String)
@@ -51,12 +39,9 @@ class RedFlag(Base):
     county = Column(String, nullable=True)
     location = Column(String)
     date = Column(DateTime, nullable=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    status_id = Column(Integer, ForeignKey("statuses.id"))
 
     user = relationship("User", back_populates="red_flags")
     status = relationship("Status", back_populates="red_flags")
-    interventions = relationship("Intervention", secondary="tags")
     images = relationship("Image", back_populates="red_flag")
     videos = relationship("Video", back_populates="red_flag")
 
@@ -70,12 +55,9 @@ class Intervention(Base):
     additional_details = Column(Text)
     county = Column(String)
     location = Column(String)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    status_id = Column(Integer, ForeignKey("statuses.id"))
 
     user = relationship("User", back_populates="interventions")
     status = relationship("Status", back_populates="interventions")
-    red_flags = relationship("RedFlag", secondary="tags")
     images = relationship("Image", back_populates="intervention")
     videos = relationship("Video", back_populates="intervention")
 
