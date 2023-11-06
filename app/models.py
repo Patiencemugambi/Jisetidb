@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table, DateTime
+from sqlalchemy import Column, Integer, String, Text, Boolean, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -8,8 +8,8 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
+    username = Column(String)
+    email = Column(String)
     password = Column(String)
     role = Column(String)
 
@@ -31,17 +31,19 @@ class Status(Base):
 class RedFlag(Base):
     __tablename__ = "red_flags"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True ,index=True)
     incident_type = Column(String)
     description = Column(Text)
     attachments = Column(String)
     additional_details = Column(Text)
     county = Column(String, nullable=True)
     location = Column(String)
-    date = Column(DateTime, nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    status_id = Column(Integer, ForeignKey("statuses.id"))
 
     user = relationship("User", back_populates="red_flags")
     status = relationship("Status", back_populates="red_flags")
+    interventions = relationship("Intervention", secondary="tags")
     images = relationship("Image", back_populates="red_flag")
     videos = relationship("Video", back_populates="red_flag")
 
@@ -55,9 +57,12 @@ class Intervention(Base):
     additional_details = Column(Text)
     county = Column(String)
     location = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    status_id = Column(Integer, ForeignKey("statuses.id"))
 
     user = relationship("User", back_populates="interventions")
     status = relationship("Status", back_populates="interventions")
+    red_flags = relationship("RedFlag", secondary="tags")
     images = relationship("Image", back_populates="intervention")
     videos = relationship("Video", back_populates="intervention")
 
