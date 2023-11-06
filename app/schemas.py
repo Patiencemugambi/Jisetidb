@@ -24,16 +24,16 @@ class User(UserBase):
     class Config:
         orm_mode = True
 
-class LoginBase(BaseModel):
+class UserLogin(BaseModel):
     username: str
-    user_id: int
-
-class LoginCreate(LoginBase):
     password: str
 
-class Login(LoginBase):
-    id: int
-    user: User
+class UserLoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+
+class UserLoginErrorResponse(BaseModel):
+    detail: str
 
     class Config:
         orm_mode = True
