@@ -8,15 +8,28 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    username = Column(String)
-    email = Column(String)
+    username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True)
     password = Column(String)
     role = Column(String)
 
+
+    login = relationship("Login", uselist=False, back_populates="user")
     red_flags = relationship("RedFlag", back_populates="user")
     interventions = relationship("Intervention", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
     admin_actions = relationship("AdminAction", back_populates="user")
+
+class Login(Base):
+    __tablename__ = "logins"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    email = Column(String, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="login")
+
 
 class Status(Base):
     __tablename__ = "statuses"
