@@ -1,8 +1,8 @@
-"""create_tables
+"""initial migration
 
-Revision ID: d2046bb9a5f6
+Revision ID: 3edeba1064a9
 Revises: 
-Create Date: 2023-10-31 19:18:14.877960
+Create Date: 2023-11-06 11:00:21.884859
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'd2046bb9a5f6'
+revision: str = '3edeba1064a9'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -34,6 +34,8 @@ def upgrade() -> None:
     sa.Column('role', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
+    op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=True)
     op.create_table('admin_actions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -57,6 +59,17 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('logins',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(), nullable=True),
+    sa.Column('email', sa.String(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_logins_email'), 'logins', ['email'], unique=True)
+    op.create_index(op.f('ix_logins_id'), 'logins', ['id'], unique=False)
+    op.create_index(op.f('ix_logins_username'), 'logins', ['username'], unique=True)
     op.create_table('notifications',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -74,6 +87,7 @@ def upgrade() -> None:
     sa.Column('additional_details', sa.Text(), nullable=True),
     sa.Column('county', sa.String(), nullable=True),
     sa.Column('location', sa.String(), nullable=True),
+    sa.Column('date', sa.DateTime(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('status_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['status_id'], ['statuses.id'], ),
@@ -118,8 +132,14 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_red_flags_id'), table_name='red_flags')
     op.drop_table('red_flags')
     op.drop_table('notifications')
+    op.drop_index(op.f('ix_logins_username'), table_name='logins')
+    op.drop_index(op.f('ix_logins_id'), table_name='logins')
+    op.drop_index(op.f('ix_logins_email'), table_name='logins')
+    op.drop_table('logins')
     op.drop_table('interventions')
     op.drop_table('admin_actions')
+    op.drop_index(op.f('ix_users_username'), table_name='users')
+    op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
     op.drop_table('statuses')
     # ### end Alembic commands ###
