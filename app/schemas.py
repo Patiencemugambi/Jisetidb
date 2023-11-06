@@ -1,80 +1,81 @@
 from typing import List, Optional
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, validator,Field
+from datetime import datetime
+from typing import List
 
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
     username: str
     email: str
-
-class UserCreate(UserBase):
     password: str
     role: str = "user"
 
     @validator("role")
-    def role_is_string(cls, v):
-        if not isinstance(v, str):
-            raise ValueError("Role must be a string")
+    def role_is_valid(cls, v):
+        valid_roles = ["user", "admin"] 
+        if v not in valid_roles:
+            raise ValueError("Invalid role")
         return v
 
-class User(UserBase):
+class User(BaseModel):
     id: int
+    username: str
+    email: str
     role: str
-    username : str
-    password : str
 
     class Config:
         orm_mode = True
 
 class UserLogin(BaseModel):
-    username: str
+    usernameorEmail: str
     password: str
 
-class UserLoginResponse(BaseModel):
+class Token(BaseModel):
     access_token: str
     token_type: str
 
-class UserLoginErrorResponse(BaseModel):
-    detail: str
+class TokenData(BaseModel):
+    username: str
 
-    class Config:
-        orm_mode = True
+class UserInDB(BaseModel):
+    username: str
+    email: str
+    role: str
+    hashed_password: str
 
-class RedFlagBase(BaseModel):
+class Geolocation(BaseModel):
+    county: str
+    location: str
+
+class RedFlagCreate(BaseModel):
     incident_type: str
     description: str
     attachments: Optional[str] = None  
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
-    user_id: int
-    status_id: int
+    date: datetime = Field(default_factory=datetime.now)
 
-class RedFlagCreate(RedFlagBase):
-    pass
-
-class RedFlag(RedFlagBase):
+class RedFlag(RedFlagCreate):
     id: int
 
     class Config:
         orm_mode = True
 
-class InterventionBase(BaseModel):
+class InterventionCreate(BaseModel):
     title: str
     description: str
     attachments: Optional[str] = None 
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
-    user_id: int
-    status_id: int
+    date: datetime = Field(default_factory=datetime.now)
 
-class InterventionCreate(InterventionBase):
-    pass
-
-class Intervention(InterventionBase):
+class Intervention(InterventionCreate):
     id: int
 
     class Config:
         orm_mode = True
+
 
 class ImageBase(BaseModel):
     file_path: str
@@ -146,35 +147,5 @@ class StatusCreate(BaseModel):
     class Config:
         orm_mode = True
 
-class UserInDB(BaseModel):
-    username: str
-    hashed_password: str  
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str     
-
-class TokenData(BaseModel):
-    username: str
-
-class UserInDB(BaseModel):
-    username: str
-    email: str
-    role: str
-    hashed_password: str
-
-class Geolocation(BaseModel):
-    county: str
-    location: str
-
-
-class LoginCreate(BaseModel):
-    username: str
-    password: str
-
-class Login(LoginCreate):
-    id: int
-
-    class Config:
-        orm_mode = True
 
