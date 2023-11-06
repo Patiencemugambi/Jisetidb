@@ -27,8 +27,6 @@ class User(UserBase):
 class LoginBase(BaseModel):
     username: str
     user_id: int
-    class cofig:
-        arbitrary_types_allowed = True
 
 class LoginCreate(LoginBase):
     password: str
@@ -43,7 +41,7 @@ class Login(LoginBase):
 class RedFlagBase(BaseModel):
     incident_type: str
     description: str
-    attachments: Optional[str] = None  
+    attachments: Optional[str] = None
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
@@ -62,7 +60,7 @@ class RedFlag(RedFlagBase):
 class InterventionBase(BaseModel):
     title: str
     description: str
-    attachments: Optional[str] = None 
+    attachments: Optional[str] = None
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
@@ -134,7 +132,7 @@ class AdminAction(AdminActionBase):
 
 class Status(BaseModel):
     id: int
-    name: str       
+    name: str
 
 class StatusCreate(BaseModel):
     name: str
@@ -150,11 +148,11 @@ class StatusCreate(BaseModel):
 
 class UserInDB(BaseModel):
     username: str
-    hashed_password: str  
+    hashed_password: str
 
 class Token(BaseModel):
     access_token: str
-    token_type: str     
+    token_type: str
 
 class TokenData(BaseModel):
     username: str
