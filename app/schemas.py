@@ -1,6 +1,5 @@
 from typing import List, Optional
 from pydantic import BaseModel, validator
-from .models import Login
 
 class UserBase(BaseModel):
     username: str
@@ -19,7 +18,6 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     role: str
-    login: Login
 
     class Config:
         orm_mode = True
@@ -41,7 +39,7 @@ class Login(LoginBase):
 class RedFlagBase(BaseModel):
     incident_type: str
     description: str
-    attachments: Optional[str] = None
+    attachments: Optional[str] = None  
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
@@ -60,7 +58,7 @@ class RedFlag(RedFlagBase):
 class InterventionBase(BaseModel):
     title: str
     description: str
-    attachments: Optional[str] = None
+    attachments: Optional[str] = None 
     additional_details: Optional[str] = None
     county: Optional[str] = None
     location: str
@@ -132,7 +130,7 @@ class AdminAction(AdminActionBase):
 
 class Status(BaseModel):
     id: int
-    name: str
+    name: str       
 
 class StatusCreate(BaseModel):
     name: str
@@ -148,11 +146,11 @@ class StatusCreate(BaseModel):
 
 class UserInDB(BaseModel):
     username: str
-    hashed_password: str
+    hashed_password: str  
 
 class Token(BaseModel):
     access_token: str
-    token_type: str
+    token_type: str     
 
 class TokenData(BaseModel):
     username: str
