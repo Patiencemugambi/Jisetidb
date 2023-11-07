@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from pydantic import BaseModel, ValidationError
 from app.database import SessionLocal
-from app.schemas import Status, Geolocation
+from app.schemas import Status, Geolocation,LoginRequest
 import os
 from uvicorn import run
 from fastapi import Request
@@ -92,27 +92,27 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
-
-@app.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = get_user(form_data.username, db)
+@app.post("/login", response_model=dict)  # Use `dict` for a generic JSON response
+def login(request_data: LoginRequest, db: Session = Depends(get_db)):
+    user = get_user(request_data.username, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
+            detail={"error": "User not found"},
             headers={"WWW-Authenticate": "Bearer"},
         )
-    if not pwd_context.verify(form_data.password, user.password):
+    if not pwd_context.verify(request_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Password verification failed",
+            detail={"error": "Password verification failed"},
             headers={"WWW-Authenticate": "Bearer"},
         )
-    print("User:", user)
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
-    return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
 
+    # Return success response as JSON
+    return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
