@@ -99,15 +99,16 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="User not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not pwd_context.verify(form_data.password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Password verification failed",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    print("User:", user)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
     return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
