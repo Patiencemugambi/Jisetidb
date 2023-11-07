@@ -26,7 +26,7 @@ class User(BaseModel):
         orm_mode = True
 
 class UserLogin(BaseModel):
-    usernameorEmail: str
+    username: str
     password: str
 
 class Token(BaseModel):
