@@ -11,7 +11,7 @@ from app.database import SessionLocal
 from app.schemas import Status, Geolocation
 import os
 from uvicorn import run
-from fastapi import FastAPI, Request
+from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -36,22 +36,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# # Custom middleware to handle "OPTIONS" requests for all routes
-# @app.middleware("http")
-# async def options_handler(request: Request, call_next):
-#     if request.method == "OPTIONS":
-#         response = JSONResponse(content={"message": "OK"})
-#     else:
-#         response = await call_next(request)
-#     return response
-# models.Base.metadata.create_all(bind=database.engine)
-
-# @app.middleware("http")
-# async def add_cors_header(request: Request, call_next):
-#     response = await call_next(request)
-#     response.headers['Access-Control-Allow-Origin'] = '*'
-#     return response
 
 def get_db():
     db = SessionLocal()
@@ -109,6 +93,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = get_user(form_data.username, db)
@@ -149,10 +135,9 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-
 @app.get("/users/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    db_user = db.query(models.User).get(user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
@@ -160,7 +145,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.put("/users/{user_id}", response_model=schemas.User)
 def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    db_user = db.query(models.User).get(user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     for field, value in user.dict().items():
@@ -172,7 +157,7 @@ def update_user(user_id: int, user: schemas.UserCreate, db: Session = Depends(ge
 
 @app.delete("/users/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    db_user = db.query(models.User).get(user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(db_user)
@@ -209,7 +194,7 @@ def read_red_flags(skip: int = 0, limit: int = 100, db: Session = Depends(get_db
 
 @app.get("/red_flags/{red_flag_id}", response_model=schemas.RedFlag)
 def read_red_flag(red_flag_id: int, db: Session = Depends(get_db)):
-    db_red_flag = db.query(models.RedFlag).filter(models.RedFlag.id == red_flag_id).first()
+    db_red_flag = db.query(models.RedFlag).get(red_flag_id)
     if db_red_flag is None:
         raise HTTPException(status_code=404, detail="Red flag not found")
     return db_red_flag
@@ -223,30 +208,20 @@ def create_red_flag(red_flag: schemas.RedFlagCreate, db: Session = Depends(get_d
     db.refresh(db_red_flag)
     return db_red_flag
 
-
-@app.put("/red_flags/{red_flag_id}/update_location", response_model=schemas.RedFlag)
-def update_red_flag_location(
-    red_flag_id: int,
-    location: Geolocation,
-    db: Session = Depends(get_db),
-    current_user: schemas.User = Depends(get_current_user)
-):
-    db_red_flag = db.query(models.RedFlag).filter(models.RedFlag.id == red_flag_id).first()
+@app.put("/red_flags/{red_flag_id}", response_model=schemas.RedFlag)
+def update_red_flag(red_flag_id: int, red_flag: schemas.RedFlagCreate, db: Session = Depends(get_db)):
+    db_red_flag = db.query(models.RedFlag).get(red_flag_id)
     if db_red_flag is None:
         raise HTTPException(status_code=404, detail="Red flag not found")
-
-    if db_red_flag.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Permission denied")
-
-    db_red_flag.county = location.county
-    db_red_flag.location = location.location
+    for field, value in red_flag.dict().items():
+        setattr(db_red_flag, field, value)
     db.commit()
     db.refresh(db_red_flag)
     return db_red_flag
 
 @app.delete("/red_flags/{red_flag_id}")
 def delete_red_flag(red_flag_id: int, db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_user)):
-    db_red_flag = db.query(models.RedFlag).filter(models.RedFlag.id == red_flag_id).first()
+    db_red_flag = db.query(models.RedFlag).get(red_flag_id)
     if db_red_flag is None:
         raise HTTPException(status_code=404, detail="Red flag not found")
 
@@ -269,11 +244,11 @@ def change_red_flag_status(
     if current_user.role != ADMIN_ROLE:
         raise HTTPException(status_code=403, detail="Permission denied. Only admin can change status.")
 
-    db_red_flag = db.query(models.RedFlag).filter(models.RedFlag.id == red_flag_id).first()
+    db_red_flag = db.query(models.RedFlag).get(red_flag_id)
     if db_red_flag is None:
         raise HTTPException(status_code=404, detail="Red flag not found")
 
-    db_status = db.query(models.Status).filter(models.Status.name == new_status.name).first()
+    db_status = db.query(models.Status).filter_by(name=new_status.name).first()
     if db_status is None:
         raise HTTPException(status_code=404, detail="Status not found")
 
@@ -281,6 +256,18 @@ def change_red_flag_status(
     db.commit()
     db.refresh(db_red_flag)
     return db_red_flag
+
+
+@app.put("/statuses/{status_id}", response_model=schemas.Status)
+def update_status(status_id: int, status: schemas.StatusCreate, db: Session = Depends(get_db)):
+    db_status = db.query(models.Status).get(status_id)
+    if db_status is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+    for field, value in status.dict().items():
+        setattr(db_status, field, value)
+    db.commit()
+    db.refresh(db_status)
+    return db_status
 
 
 @app.post("/interventions/{intervention_id}/change_status", response_model=schemas.Intervention)
@@ -293,11 +280,11 @@ def change_intervention_status(
     if current_user.role != ADMIN_ROLE:
         raise HTTPException(status_code=403, detail="Permission denied. Only admin can change status.")
 
-    db_intervention = db.query(models.Intervention).filter(models.Intervention.id == intervention_id).first()
+    db_intervention = db.query(models.Intervention).get(intervention_id)
     if db_intervention is None:
         raise HTTPException(status_code=404, detail="Intervention not found")
 
-    db_status = db.query(models.Status).filter(models.Status.name == new_status.name).first()
+    db_status = db.query(models.Status).filter_by(name=new_status.name).first()
     if db_status is None:
         raise HTTPException(status_code=404, detail="Status not found")
 
@@ -309,7 +296,7 @@ def change_intervention_status(
 
 @app.get("/interventions/{intervention_id}", response_model=schemas.Intervention)
 def read_intervention(intervention_id: int, db: Session = Depends(get_db)):
-    db_intervention = db.query(models.Intervention).filter(models.Intervention.id == intervention_id).first()
+    db_intervention = db.query(models.Intervention).get(intervention_id)
     if db_intervention is None:
         raise HTTPException(status_code=404, detail="Intervention not found")
     return db_intervention
@@ -317,7 +304,7 @@ def read_intervention(intervention_id: int, db: Session = Depends(get_db)):
 
 @app.put("/interventions/{intervention_id}", response_model=schemas.Intervention)
 def update_intervention(intervention_id: int, intervention: schemas.InterventionCreate, db: Session = Depends(get_db)):
-    db_intervention = db.query(models.Intervention).filter(models.Intervention.id == intervention_id).first()
+    db_intervention = db.query(models.Intervention).get(intervention_id)
     if db_intervention is None:
         raise HTTPException(status_code=404, detail="Intervention not found")
     for field, value in intervention.dict().items():
@@ -334,7 +321,7 @@ def update_intervention_location(
     db: Session = Depends(get_db),
     current_user: schemas.User = Depends(get_current_user)
 ):
-    db_intervention = db.query(models.Intervention).filter(models.Intervention.id == intervention_id).first()
+    db_intervention = db.query(models.Intervention).get(intervention_id)
     if db_intervention is None:
         raise HTTPException(status_code=404, detail="Intervention not found")
 
@@ -365,7 +352,7 @@ def read_interventions(skip: int = 0, limit: int = 100, db: Session = Depends(ge
 
 @app.delete("/interventions/{intervention_id}")
 def delete_intervention(intervention_id: int, db: Session = Depends(get_db), current_user: schemas.User = Depends(get_current_user)):
-    db_intervention = db.query(models.Intervention).filter(models.Intervention.id == intervention_id).first()
+    db_intervention = db.query(models.Intervention).get(intervention_id)
     if db_intervention is None:
         raise HTTPException(status_code=404, detail="Intervention not found")
 
