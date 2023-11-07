@@ -28,7 +28,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
 
-# Configure CORS to allow all origins for all routes (you can customize this)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -80,7 +79,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    # Check if the user specified "admin" as the role
     role = user.role if user.role == ADMIN_ROLE else USER_ROLE
 
     existing_user = get_user(user.username, db)
