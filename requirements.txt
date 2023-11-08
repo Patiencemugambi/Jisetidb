@@ -17,6 +17,7 @@ jose
 jwt
 Mako
 MarkupSafe
+maturin
 passlib
 pipfile
 pyasn1
@@ -31,5 +32,6 @@ sniffio
 SQLAlchemy
 starlette
 toml
+tomli
 typing_extensions
 uvicorn
