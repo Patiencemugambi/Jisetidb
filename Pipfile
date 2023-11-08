@@ -9,11 +9,7 @@ fastapi = "*"
 sqlalchemy = "*"
 pydantic = "*"
 alembic = "*"
-jose = "*"
-pydantic-core = "*"
-starlette = "*"
-bcrypt = "*"
-maturin = "*"
+passlib = "*"
 
 [dev-packages]
 
