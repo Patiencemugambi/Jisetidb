@@ -22,6 +22,7 @@ kiwisolver
 Mako
 MarkupSafe
 matplotlib
+maturin
 numpy
 packaging
 passlib
@@ -45,4 +46,3 @@ toml
 tomli
 typing_extensions
 uvicorn
-maturin
