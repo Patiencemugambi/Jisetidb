@@ -11,8 +11,6 @@ fastapi
 greenlet
 h11
 idna
-jose
-jwt
 Mako
 MarkupSafe
 passlib
