@@ -92,7 +92,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(db_user)
     return db_user
 
-@app.post("/login", response_model=dict)  # Use `dict` for a generic JSON response
+@app.post("/login", response_model=dict)  
 def login(request_data: LoginRequest, db: Session = Depends(get_db)):
     user = get_user(request_data.username, db)
     if not user:
@@ -111,7 +111,6 @@ def login(request_data: LoginRequest, db: Session = Depends(get_db)):
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
 
-    # Return success response as JSON
     return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
 
 @app.post("/token", response_model=schemas.Token)
@@ -255,6 +254,28 @@ def change_red_flag_status(
     db.commit()
     db.refresh(db_red_flag)
     return db_red_flag
+@app.put("/red_flags/{red_flag_id}/change_status", response_model=schemas.RedFlag)
+def change_red_flag_status(
+    red_flag_id: int,
+    new_status: Status,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    if current_user.role != ADMIN_ROLE:
+        raise HTTPException(status_code=403, detail="Permission denied. Only admin can change status.")
+
+    db_red_flag = db.query(models.RedFlag).get(red_flag_id)
+    if db_red_flag is None:
+        raise HTTPException(status_code=404, detail="Red flag not found")
+
+    db_status = db.query(models.Status).filter_by(name=new_status.name).first()
+    if db_status is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+
+    db_red_flag.status_id = db_status.id
+    db.commit()
+    db.refresh(db_red_flag)
+    return db_red_flag
 
 
 @app.put("/statuses/{status_id}", response_model=schemas.Status)
@@ -363,6 +384,52 @@ def delete_intervention(intervention_id: int, db: Session = Depends(get_db), cur
     db.commit()
 
     return {"message": "Intervention deleted", "deleted_at": db_intervention.deleted_at, "deleted_by": db_intervention.deleted_by}
+
+@app.post("/interventions/{intervention_id}/change_status", response_model=schemas.Intervention)
+def change_intervention_status(
+    intervention_id: int,
+    new_status: Status,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    if current_user.role != ADMIN_ROLE:
+        raise HTTPException(status_code=403, detail="Permission denied. Only admin can change status.")
+
+    db_intervention = db.query(models.Intervention).get(intervention_id)
+    if db_intervention is None:
+        raise HTTPException(status_code=404, detail="Intervention not found")
+
+    db_status = db.query(models.Status).filter_by(name=new_status.name).first()
+    if db_status is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+
+    db_intervention.status_id = db_status.id
+    db.commit()
+    db.refresh(db_intervention)
+    return db_intervention
+
+@app.put("/interventions/{intervention_id}/change_status", response_model=schemas.Intervention)
+def change_intervention_status(
+    intervention_id: int,
+    new_status: Status,
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user)
+):
+    if current_user.role != ADMIN_ROLE:
+        raise HTTPException(status_code=403, detail="Permission denied. Only admin can change status.")
+
+    db_intervention = db.query(models.Intervention).get(intervention_id)
+    if db_intervention is None:
+        raise HTTPException(status_code=404, detail="Intervention not found")
+
+    db_status = db.query(models.Status).filter_by(name=new_status.name).first()
+    if db_status is None:
+        raise HTTPException(status_code=404, detail="Status not found")
+
+    db_intervention.status_id = db_status.id
+    db.commit()
+    db.refresh(db_intervention)
+    return db_intervention
 
 
 if __name__ == "__main__":
