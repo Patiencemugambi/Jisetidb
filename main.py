@@ -8,13 +8,12 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from pydantic import BaseModel, ValidationError
 from app.database import SessionLocal
-from app.schemas import Status, Geolocation,LoginRequest
+from app.schemas import Status, Geolocation, LoginRequest
 import os
 from uvicorn import run
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
 
 SECRET_KEY = "bbd52edcc37bf1e12607be5859baabfdb22e3aee556d5798d7174a941aa4bd8f"
 ALGORITHM = "HS256"
@@ -43,7 +42,6 @@ def get_db():
     finally:
         db.close()
 
-
 def get_user(username: str, db: Session):
     return db.query(models.User).filter(models.User.username == username).first()
 
@@ -71,11 +69,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         token_data = schemas.TokenData(username=username)
     except (JWTError, ValidationError):
         raise credentials_exception
-    user = get_user(username=token_data.username, db=db) 
+    user = get_user(username=token_data.username, db=db)
     if user is None:
         raise credentials_exception
     return user
-
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
@@ -112,6 +109,37 @@ def login(request_data: LoginRequest, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
 
     return {"message": "Logged in successfully", "access_token": access_token, "token_type": "bearer"}
+
+@app.post("/admin/login", response_model=dict)
+def admin_login(request_data: LoginRequest, db: Session = Depends(get_db)):
+    admin_user = get_user(request_data.username, db)
+    
+    if not admin_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": "Admin not found"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    if admin_user.role != ADMIN_ROLE:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": "Admin credentials required"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not pwd_context.verify(request_data.password, admin_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": "Password verification failed"},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(data={"sub": admin_user.username}, expires_delta=access_token_expires)
+
+    return {"message": "Admin logged in successfully", "access_token": access_token, "token_type": "bearer"}
+
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -254,6 +282,7 @@ def change_red_flag_status(
     db.commit()
     db.refresh(db_red_flag)
     return db_red_flag
+
 @app.put("/red_flags/{red_flag_id}/change_status", response_model=schemas.RedFlag)
 def change_red_flag_status(
     red_flag_id: int,
