@@ -1,8 +1,6 @@
 alembic
 annotated-types
 anyio
-async-exit-stack
-async-generator
 bcrypt
 cffi
 click
@@ -13,12 +11,9 @@ fastapi
 greenlet
 h11
 idna
-jose
-jwt
 Mako
 MarkupSafe
 passlib
-pipfile
 pyasn1
 pycparser
 pydantic
@@ -30,6 +25,5 @@ six
 sniffio
 SQLAlchemy
 starlette
-toml
 typing_extensions
 uvicorn
