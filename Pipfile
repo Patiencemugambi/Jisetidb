@@ -7,6 +7,11 @@ name = "pypi"
 uvicorn = "*"
 fastapi = "*"
 sqlalchemy = "*"
+pydantic = "*"
+alembic = "*"
+jose = "*"
+starlette = "*"
+bcrypt = "*"
 
 [dev-packages]
 
