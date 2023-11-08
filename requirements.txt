@@ -19,7 +19,6 @@ passlib
 pyasn1
 pycparser
 pydantic
-pydantic_core
 python-jose
 python-multipart
 rsa
