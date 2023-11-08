@@ -22,7 +22,6 @@ kiwisolver
 Mako
 MarkupSafe
 matplotlib
-maturin
 numpy
 packaging
 passlib
@@ -38,7 +37,6 @@ python-dateutil
 python-jose
 python-multipart
 rsa
-RUST
 six
 sniffio
 SQLAlchemy

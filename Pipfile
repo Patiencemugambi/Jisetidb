@@ -13,8 +13,6 @@ jose = "*"
 pydantic-core = "*"
 starlette = "*"
 bcrypt = "*"
-maturin = "*"
-rust = "*"
 
 [dev-packages]
 
