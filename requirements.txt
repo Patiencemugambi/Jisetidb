@@ -45,3 +45,4 @@ toml
 tomli
 typing_extensions
 uvicorn
+maturin
