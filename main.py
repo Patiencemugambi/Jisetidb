@@ -87,7 +87,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    message = "User created successfully"
+
+    return {
+        "message": message,
+        "user": db_user
+    }
+    
 
 @app.post("/login", response_model=dict)  
 def login(request_data: LoginRequest, db: Session = Depends(get_db)):
@@ -459,7 +465,6 @@ def change_intervention_status(
     db.commit()
     db.refresh(db_intervention)
     return db_intervention
-
 
 if __name__ == "__main__":
     host = "0.0.0.0"
